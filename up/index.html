@@ -1,0 +1,99 @@
+<html>
+<head>
+<title>複数ファイルアップローダー</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <style>
+    .imagepPrevie{
+      padding: 10px;
+      border:dashed 2px #aaa;
+      font-size: 1.05em;
+      display: flex;
+      flex-wrap: wrap;
+    }
+    .imagepPrevie--image {
+      width: 100%;
+    }
+    .imageMessage--animation{
+      height:20px;
+      padding-left: 15px;
+    }
+
+  </style>
+</head>
+<body>
+    <div class="container">
+      <h1><span class="glyphicon glyphicon-cloud-upload icon_blank_navi"></span> ファイルアップローダー</h1>
+      <legend>複数の画像を選択できます</legend>
+      <form id="send-form" method="post" enctype="multipart/form-data">
+        <p><input type="file" name="upfile[]" value="" multiple="multiple" id="article_image_file_name" /></p>
+        <input type="submit" value="送信する" />
+      </form>
+      <div class="result"></div>
+      <div class="row imagepPrevie" id="list">画像を選択するとここにプレビューが出ます</div>
+        <ul style="padding-top:10px;">
+            <li>アップデートには時間が掛かることがあります。<br>メッセージがあるまでブラウザを閉じたりリロードしないでください。
+        </ul>
+    </div>
+</body>
+</html>
+
+<script type="text/javascript">
+  document.getElementById('article_image_file_name').onchange = function(event){
+    initializeFiles();
+
+    var files = event.target.files;
+    var y = 0;
+
+    for (var i = 0, f; f = files[i]; i++) {
+      var reader = new FileReader;
+      
+      reader.readAsDataURL(f);
+
+      reader.onload = (function(theFile) {
+        return function (e) {
+          y += 1;
+          var div = document.createElement('div');
+          div.className = 'col-xs-2';
+          div.innerHTML += '<img style="padding-top:15px;padding-bottom:15px;"class="imagepPrevie--image" src="' + e.target.result + '" />';
+
+          document.getElementById('list').insertBefore(div, null);
+        }
+      })(f);
+    }
+  };
+
+  function initializeFiles() {
+    document.getElementById('list').innerHTML = '';
+  }
+
+  $(function() {
+    // submit押下時に実行する
+    $('#send-form').submit(function() { 
+      // submit押下時に実行する
+      $('.result').html('<div class="alert alert-info">ファイルをアップロード中です <img src="img_loading.svg" class="imageMessage--animation"></div>');
+              
+        // 画像ファイルの取得・セット
+        var fd = new FormData();
+        var fd = new FormData($('#send-form').get(0));
+              
+        $.ajax({	
+          url: './upload.php', // 画像登録処理を行うPHPファイル
+          type: 'POST',
+          data: fd,
+          cache: false,
+          contentType: false,
+          processData: false,
+          dataType: 'html'
+  
+        }).done(function(data){
+          //処理内容を表示
+          $('.result').html(data);
+        });
+      return false; // submitをキャンセル
+    }); 
+  });
+  </script>
